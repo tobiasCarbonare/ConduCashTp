@@ -20,7 +20,7 @@ function Principal() {
         <div className="grid grid-cols-2 gap-4">
           <button className="botonPrincipal flex flex-col items-center justify-center p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors duration-200">
             <FaPlus className="text-3xl text-gray-700 mb-2" />
-            <span className="text-gray-800 font-medium">Registrar ganancia</span>
+            <span className="text-gray-800 font-medium">Registrar ganancias</span>
           </button>
 
           <button className=" botonPrincipal  flex flex-col items-center justify-center p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors duration-200">
