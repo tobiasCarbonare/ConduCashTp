@@ -1,24 +1,20 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-
-import RegistroGanancias from './components/RegistroGanancias'
-import Principal from './components/Principal'
-import RentabilidadViajes from './components/RentabilidadViajes'
-import Servicios from './components/Servicios'
+import LoginPage from './components/LoginPage.jsx'
+import Dashboard from './components/Dashboard.jsx'
 
 function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-    
-    <RegistroGanancias/>
-    <RentabilidadViajes/>
-    <Servicios/>
-    </>
-  )
+  console.log("Martin es puto");
+  
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  if (isLoggedIn) {
+    return <Dashboard />
+  }
+
+
+  return <LoginPage onLogin={() => setIsLoggedIn(true)} />
 }
 
 export default App
