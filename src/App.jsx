@@ -4,8 +4,6 @@ import LoginPage from './components/LoginPage.jsx'
 import Dashboard from './components/Dashboard.jsx'
 
 function App() {
-
-  console.log("Martin es puto");
   
 
   const [isLoggedIn, setIsLoggedIn] = useState(false)
