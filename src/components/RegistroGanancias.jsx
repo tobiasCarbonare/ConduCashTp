@@ -64,21 +64,23 @@ function RegistroGanancias() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md mt-10">
+    <div className="space-y-6">
+  <div>
+    <h2 className="text-3xl font-bold text-blue-100 mb-2">Registro de Ganancias</h2>
+    <p className="text-blue-200/80 text-lg">Registra tus ganancias y gastos para calcular tu rentabilidad real.</p>
+  </div>
+  
+  <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md mt-10">
       <h2 className="text-2xl font-bold mb-4 text-center">Registro de Ganancias</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/*
-          IMPORTANTE: Asegúrate de añadir el atributo 'value' a cada input,
-          vinculándolo con el estado 'formulario'. Esto es crucial para que
-          los campos se reinicien visualmente cuando cambias el estado.
-        */}
+
         
         <input
           type="number"
           name="ganancias"
           placeholder="Ganancias"
-          value={formulario.ganancias} // <-- Añadido
+          value={formulario.ganancias} 
           onChange={handleChange}
           className="w-full p-2 border rounded-md mb-4"
         />
@@ -86,7 +88,7 @@ function RegistroGanancias() {
           type="number"
           name="viajes"
           placeholder="Viajes"
-          value={formulario.viajes} // <-- Añadido
+          value={formulario.viajes} 
           onChange={handleChange}
           className="w-full p-2 border rounded-md mb-3"
         />
@@ -131,17 +133,14 @@ function RegistroGanancias() {
           className="w-full p-2 border rounded-md mb-3"
         />
         
-
-        {/* Contenedor para los dos botones juntos y separados */}
-        
        
-        <div className="flex justify-between space-x-4 pt-4"> {/* Añadido padding-top para separarlos un poco de los inputs */}
+        <div className="flex justify-between space-x-4 pt-4"> 
           
           <button
             type="submit"
             className="calcular flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
             
-            disabled={isFormIncomplete}   // Des habilita el botón si el formulario está incompleto
+            disabled={isFormIncomplete}   
             
             
           >
@@ -149,7 +148,7 @@ function RegistroGanancias() {
             Calcular Ganancias
           </button>
           <button
-            type="button" // MUY IMPORTANTE: type="button" para que no envíe el formulario
+            type="button" 
             onClick={handleReset}
             className="reiniciar flex-1 bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600 transition"
           >
@@ -174,7 +173,14 @@ function RegistroGanancias() {
           </ul>
         </div>
       )}
+      
     </div>
+</div>
+
+
+    
+
+    
   );
 }
 
