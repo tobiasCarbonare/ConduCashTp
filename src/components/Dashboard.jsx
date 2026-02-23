@@ -84,7 +84,10 @@ export default function Dashboard() {
               <h1 className="text-xl font-bold text-blue-100">TransportApp</h1>
             </div>
             <button
-              onClick={() => window.location.reload()}
+              onClick={async () => {
+                const { supabase } = await import("../lib/supabase")
+                await supabase.auth.signOut()
+              }}
               className="border border-blue-600/50 text-blue-200 hover:bg-blue-700/30 hover:text-blue-100 px-4 py-2 rounded-lg transition-all"
             >
               Cerrar Sesión

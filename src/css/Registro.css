@@ -1,21 +1,14 @@
 @import "tailwindcss";
-h2 {
+
+.registro-container h2 {
     text-align: center;
     margin-bottom: 20px;
     font-size: 20px;
-    color: #000000;
+    color: #ffffff;
     font-weight: bold;
 }
-input {
-    border: 2px solid #05000c;
-    background-color: #f0f0f0;
-    padding: 0.5rem;
-    margin-bottom: 1rem;
-    font-size: 16px;
-    color: #000;
-    border-radius: 4px;
-}
-form {
+
+.registro-form {
     border: 11px solid #ffffff2c;
     padding: 1rem;
     display: flex;
@@ -23,33 +16,25 @@ form {
     width: 100%;
     max-width: 400px;
     margin: auto;
-    background-color: #e9e7e5;
+    background-color: rgba(30, 41, 59, 0.7);
+    /* Dark slate semi-transparent */
+    border-radius: 8px;
 }
 
-.resultados {
-    border: 2px solid #05000c;
-    background-color: #f0f0f0;
+.registro-form input {
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    background-color: rgba(15, 23, 42, 0.5);
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 16px;
+    color: #fff;
+    border-radius: 6px;
+}
+
+.resultados-box {
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    background-color: rgba(30, 41, 59, 0.5);
     padding: 1rem;
     margin-top: 1rem;
-    border-radius: 4px;
-    
-}
-button {
-    
-    color: #fff;
-    padding: 0.5rem;
-    margin: 1px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-#root{
-    background-color: rgb(180, 179, 178);
-}
-.calcular{
-    background-color: green;
-}
-.reiniciar{
-    background-color: red;
+    border-radius: 6px;
 }

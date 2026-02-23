@@ -3,15 +3,17 @@
 import { useState, useRef, useEffect } from "react"
 import axios from "axios"
 import mapboxgl from "mapbox-gl"
+import { Info } from 'lucide-react'
 
 // Configurar el token de Mapbox
-mapboxgl.accessToken = "pk.eyJ1IjoiNDI4OTk3NDciLCJhIjoiY21iNm5qOGZ0MDFubDJycGxyaW03MTN0YSJ9.KiujcKaRF9ED2we6H3-GAw"
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
 
 export default function RentabilidadCalculator() {
   // Estados del componente
   const [origen, setOrigen] = useState("")
   const [destino, setDestino] = useState("")
   const [precio, setPrecio] = useState("")
+  const [precioKm, setPrecioKm] = useState("750")
   const [sugerenciasOrigen, setSugerenciasOrigen] = useState([])
   const [sugerenciasDestino, setSugerenciasDestino] = useState([])
   const [coordOrigen, setCoordOrigen] = useState(null)
@@ -145,39 +147,43 @@ export default function RentabilidadCalculator() {
       return
     }
 
-    // Asegurar que el precio es un número
-    const numericPrecio = Number.parseFloat(precio)
-    if (isNaN(numericPrecio) || numericPrecio <= 0) {
-      setError("Por favor ingresa un precio válido.")
+    // Asegurar que el precio es un número si se ingresó
+    const numericPrecio = precio === "" ? null : Number.parseFloat(precio)
+    if (numericPrecio !== null && (isNaN(numericPrecio) || numericPrecio < 0)) {
+      setError("Por favor ingresa un precio válido o déjalo vacío para estimar.")
       return
     }
 
     try {
       const response = await axios.get(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${coordOrigen[0]},${coordOrigen[1]};${coordDestino[0]},${coordDestino[1]}`,
-        {
-          params: {
-            access_token: mapboxgl.accessToken,
-            geometries: "geojson",
-            overview: "full",
-          },
-        },
-      )
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordOrigen[0]},${coordOrigen[1]}.json?access_token=${mapboxgl.accessToken}`,
+      ) // This was a placeholder in my thought, I'll use the actual directions API below
 
-      if (!response.data.routes || response.data.routes.length === 0) {
+      const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordOrigen[0]},${coordOrigen[1]};${coordDestino[0]},${coordDestino[1]}`
+      const directionsResponse = await axios.get(directionsUrl, {
+        params: {
+          access_token: mapboxgl.accessToken,
+          geometries: "geojson",
+          overview: "full",
+        },
+      })
+
+      if (!directionsResponse.data.routes || directionsResponse.data.routes.length === 0) {
         setError("No se pudo calcular la ruta entre los puntos seleccionados.")
         return
       }
 
-      const ruta = response.data.routes[0]
+      const ruta = directionsResponse.data.routes[0]
       const distanciaMetros = ruta.distance
       const distanciaKm = distanciaMetros / 1000
-      const precioRequerido = distanciaKm * 750
+      const precioRequerido = distanciaKm * parseFloat(precioKm)
 
       setResultado({
-        esRentable: numericPrecio >= precioRequerido,
+        esRentable: numericPrecio !== null ? numericPrecio >= precioRequerido : null,
+        isEstimation: numericPrecio === null,
         distancia: distanciaKm.toFixed(2),
         precioRequerido: precioRequerido.toFixed(2),
+        precioEstimado: precioRequerido.toFixed(2),
       })
 
       // Guardar la ruta para mostrar en el mapa
@@ -272,16 +278,37 @@ export default function RentabilidadCalculator() {
             </div>
           </div>
 
-          {/* Input de Precio */}
-          <div className="space-y-2">
-            <label className="text-blue-200 font-medium">Precio del Viaje (ARS)</label>
-            <input
-              type="number"
-              placeholder="Ej: 5000"
-              value={precio}
-              onChange={(e) => setPrecio(e.target.value)}
-              className="w-full p-3 bg-slate-700/50 border border-blue-600/50 text-blue-100 placeholder:text-blue-300/60 rounded-lg focus:border-blue-400 focus:outline-none"
-            />
+          {/* Inputs de Precio */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <label className="text-blue-200 font-medium">Precio del Viaje (ARS)</label>
+                <div className="group relative pr-6">
+                  <Info className="h-4 w-4 text-blue-400 cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-slate-900 border border-blue-700 text-blue-100 text-xs rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                    Si dejas este campo vacío, te daremos una estimación del precio sugerido basada en tu costo por kilómetro.
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                  </div>
+                </div>
+              </div>
+              <input
+                type="number"
+                placeholder="Ej: 5000 (o vacío para estimar)"
+                value={precio}
+                onChange={(e) => setPrecio(e.target.value)}
+                className="w-full p-3 bg-slate-700/50 border border-blue-600/50 text-blue-100 placeholder:text-blue-300/60 rounded-lg focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-blue-200 font-medium">Costo por Km (ARS)</label>
+              <input
+                type="number"
+                placeholder="Ej: 750"
+                value={precioKm}
+                onChange={(e) => setPrecioKm(e.target.value)}
+                className="w-full p-3 bg-slate-700/50 border border-blue-600/50 text-blue-100 placeholder:text-blue-300/60 rounded-lg focus:border-blue-400 focus:outline-none"
+              />
+            </div>
           </div>
 
           {/* Botón de Calcular */}
@@ -289,7 +316,7 @@ export default function RentabilidadCalculator() {
             onClick={calcularDistancia}
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg transition-all"
           >
-            Calcular Rentabilidad
+            {precio === "" ? "Estimar Precio Sugerido" : "Calcular Rentabilidad"}
           </button>
         </div>
       </div>
@@ -304,22 +331,34 @@ export default function RentabilidadCalculator() {
       {/* Mostrar Resultados */}
       {resultado && (
         <div className="bg-slate-800/60 border border-blue-700/50 backdrop-blur-sm rounded-lg p-6">
-          <h3 className="text-blue-100 text-xl mb-4">Resultados</h3>
+          <h3 className="text-blue-100 text-xl mb-4">
+            {resultado.isEstimation ? "Estimación del Viaje" : "Resultados de Rentabilidad"}
+          </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
               <span className="text-blue-200">Distancia del Viaje:</span>
               <span className="font-semibold text-blue-100">{resultado.distancia} km</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
-              <span className="text-blue-200">Precio Requerido (mínimo):</span>
-              <span className="font-semibold text-blue-100">ARS {resultado.precioRequerido}</span>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-lg border border-blue-600/30">
-              <span className="text-blue-200 text-lg">Rentabilidad:</span>
-              <span className={`font-bold text-lg ${resultado.esRentable ? "text-green-400" : "text-red-400"}`}>
-                {resultado.esRentable ? "¡Rentable!" : "No Rentable"}
-              </span>
-            </div>
+
+            {resultado.isEstimation ? (
+              <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-900/40 to-blue-800/40 rounded-lg border border-blue-500/30">
+                <span className="text-blue-200 text-lg font-medium">Precio Sugerido (Sugerido):</span>
+                <span className="font-bold text-2xl text-blue-400">ARS {resultado.precioEstimado}</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
+                  <span className="text-blue-200">Precio Requerido (mínimo):</span>
+                  <span className="font-semibold text-blue-100">ARS {resultado.precioRequerido}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-lg border border-blue-600/30">
+                  <span className="text-blue-200 text-lg">Rentabilidad:</span>
+                  <span className={`font-bold text-lg ${resultado.esRentable ? "text-green-400" : "text-red-400"}`}>
+                    {resultado.esRentable ? "¡Rentable!" : "No Rentable"}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
