@@ -18,6 +18,33 @@ import {
 } from 'lucide-react';
 
 /**
+ * SUB-COMPONENTE: Campo de Entrada Estilizado
+ * Definido fuera del componente principal para evitar que React lo recree en cada render
+ * y así no perder el foco (focus loss bug).
+ */
+const InputField = ({ label, name, placeholder, value, icon: Icon, onChange, type = "number", required = true }) => (
+  <div className="space-y-2 group">
+    <label className="text-blue-200 text-sm font-semibold ml-1 group-focus-within:text-blue-400 transition-colors">
+      {label}
+    </label>
+    <div className="relative">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400/60 group-focus-within:text-blue-400 transition-colors">
+        <Icon className="h-5 w-5" />
+      </div>
+      <input
+        type={type}
+        name={name}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full pl-10 pr-4 py-3 bg-slate-900/40 border border-blue-700/30 text-blue-100 placeholder:text-blue-300/20 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-300"
+      />
+    </div>
+  </div>
+);
+
+/**
  * COMPONENTE REGISTRO DE GANANCIAS
  * 
  * Este módulo permite al usuario ingresar sus métricas diarias de trabajo
@@ -86,17 +113,10 @@ function RegistroGanancias({ initialView = 'form' }) {
     });
   };
 
-  /**
-   * FUNCIÓN: Guardar Registro
-   * 1. Procesa los números del formulario.
-   * 2. Calcula Ganancia Neta y Totales.
-   * 3. Inserta los datos en la tabla 'registros_ganancias' de Supabase.
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSaving) return;
 
-    // Conversión de string a float para cálculos
     const ganancias = parseFloat(formulario.ganancias) || 0;
     const viajes = parseFloat(formulario.viajes) || 0;
     const kms = parseFloat(formulario.kms) || 0;
@@ -116,7 +136,6 @@ function RegistroGanancias({ initialView = 'form' }) {
 
       if (!user) throw new Error("Usuario no autenticado");
 
-      // INSERCIÓN EN BASE DE DATOS
       const { error: insertError } = await supabase
         .from('registros_ganancias')
         .insert([
@@ -134,7 +153,6 @@ function RegistroGanancias({ initialView = 'form' }) {
 
       if (insertError) throw insertError;
 
-      // Actualizar estado local para mostrar el resumen al usuario inmediatamente
       setResultado({
         gananciasBrutas,
         precioBrutoPorKm: kms > 0 ? gananciasBrutas / kms : 0,
@@ -163,37 +181,10 @@ function RegistroGanancias({ initialView = 'form' }) {
     toast.info("Formulario limpiado");
   };
 
-  // Variantes de animación para Framer Motion
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
-
-  /**
-   * SUB-COMPONENTE: Campo de Entrada Estilizado
-   * Reutilizable para mantener consistencia visual en el formulario.
-   */
-  const InputField = ({ label, name, placeholder, value, icon: Icon, type = "number", required = true }) => (
-    <div className="space-y-2 group">
-      <label className="text-blue-200 text-sm font-semibold ml-1 group-focus-within:text-blue-400 transition-colors">
-        {label}
-      </label>
-      <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400/60 group-focus-within:text-blue-400 transition-colors">
-          <Icon className="h-5 w-5" />
-        </div>
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder}
-          value={value}
-          onChange={handleChange}
-          required={required}
-          className="w-full pl-10 pr-4 py-3 bg-slate-900/40 border border-blue-700/30 text-blue-100 placeholder:text-blue-300/20 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-300"
-        />
-      </div>
-    </div>
-  );
 
   return (
     <motion.div
@@ -202,7 +193,6 @@ function RegistroGanancias({ initialView = 'form' }) {
       variants={containerVariants}
       className="space-y-8 max-w-5xl mx-auto px-4"
     >
-      {/* Título y Selector de Vista (Nuevo vs Historial) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-4xl font-extrabold text-white tracking-tight mb-2">
@@ -250,20 +240,20 @@ function RegistroGanancias({ initialView = 'form' }) {
 
                 <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Ganancias App/Plataforma" name="ganancias" placeholder="Ej: 50000" value={formulario.ganancias} icon={DollarSign} />
-                    <InputField label="Viajes Realizados" name="viajes" placeholder="Ej: 15" value={formulario.viajes} icon={Briefcase} />
+                    <InputField label="Ganancias App/Plataforma" name="ganancias" placeholder="Ej: 50000" value={formulario.ganancias} icon={DollarSign} onChange={handleChange} />
+                    <InputField label="Viajes Realizados" name="viajes" placeholder="Ej: 15" value={formulario.viajes} icon={Briefcase} onChange={handleChange} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Kilómetros Recorridos" name="kms" placeholder="Ej: 120" value={formulario.kms} icon={Gauge} />
-                    <InputField label="Horas de Trabajo" name="horas" placeholder="Ej: 8" value={formulario.horas} icon={Clock} />
+                    <InputField label="Kilómetros Recorridos" name="kms" placeholder="Ej: 120" value={formulario.kms} icon={Gauge} onChange={handleChange} />
+                    <InputField label="Horas de Trabajo" name="horas" placeholder="Ej: 8" value={formulario.horas} icon={Clock} onChange={handleChange} />
                   </div>
 
-                  <InputField label="Ganancias Extras (Propinas, Particulares)" name="gananciasExtras" placeholder="Ej: 2000" value={formulario.gananciasExtras} icon={TrendingUp} required={false} />
+                  <InputField label="Ganancias Extras (Propinas, Particulares)" name="gananciasExtras" placeholder="Ej: 2000" value={formulario.gananciasExtras} icon={TrendingUp} onChange={handleChange} required={false} />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Gasto en Combustible" name="combustible" placeholder="Ej: 10000" value={formulario.combustible} icon={Fuel} />
-                    <InputField label="Gastos Varios" name="gastosVarios" placeholder="Ej: 1500" value={formulario.gastosVarios} icon={Settings} />
+                    <InputField label="Gasto en Combustible" name="combustible" placeholder="Ej: 10000" value={formulario.combustible} icon={Fuel} onChange={handleChange} />
+                    <InputField label="Gastos Varios" name="gastosVarios" placeholder="Ej: 1500" value={formulario.gastosVarios} icon={Settings} onChange={handleChange} />
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -287,12 +277,12 @@ function RegistroGanancias({ initialView = 'form' }) {
                 </form>
               </div>
 
-              {/* MUESTRA DE RESULTADOS: Solo aparece tras un guardado exitoso */}
               <AnimatePresence>
                 {resultado && (
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 30 }}
                     className="mt-8 p-8 bg-gradient-to-br from-blue-900/40 to-slate-900/40 border border-blue-500/20 backdrop-blur-3xl rounded-3xl shadow-2xl"
                   >
                     <div className="flex items-center justify-between mb-8">
@@ -318,7 +308,6 @@ function RegistroGanancias({ initialView = 'form' }) {
                         </div>
                       </div>
 
-                      {/* Proporciones calculadas (Análisis por unidad) */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[
                           { label: 'Neto / KM', val: resultado.precioNetoPorKm, icon: Gauge },
@@ -340,7 +329,6 @@ function RegistroGanancias({ initialView = 'form' }) {
             </div>
           </motion.div>
         ) : (
-          /* VISTA DE HISTORIAL: Listado de todos los datos en Supabase */
           <motion.div
             key="history"
             initial={{ opacity: 0, x: 20 }}
@@ -374,7 +362,6 @@ function RegistroGanancias({ initialView = 'form' }) {
                 </div>
               ) : (
                 <>
-                  {/* VISTA MOBILE: Cards (oculto en lg) */}
                   <div className="lg:hidden p-4 space-y-4">
                     {historial.map((reg, index) => {
                       const bruto = (reg.ganancias || 0) + (reg.ganancias_extras || 0);
@@ -427,7 +414,6 @@ function RegistroGanancias({ initialView = 'form' }) {
                     })}
                   </div>
 
-                  {/* VISTA DESKTOP: Tabla (oculto en mobile) */}
                   <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead className="bg-slate-900/80 text-blue-200/50 text-[10px] sm:text-xs uppercase font-black tracking-[0.2em]">
