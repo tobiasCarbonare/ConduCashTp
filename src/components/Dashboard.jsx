@@ -3,6 +3,7 @@ import { Car, Calculator, TrendingUp, Settings } from 'lucide-react'
 import RentabilidadCalculator from "./RentabilidadCalculator.jsx"
 import RegistroGanancias from "./RegistroGanancias.jsx"
 import Servicios from "./Servicios.jsx"
+import Principal from "./Principal.jsx"
 
 /**
  * COMPONENTE DASHBOARD
@@ -48,40 +49,13 @@ export default function Dashboard() {
         return <RentabilidadCalculator />
       case "earnings":
         return <RegistroGanancias />
+      case "earnings_history":
+        return <RegistroGanancias initialView="history" />
       case "services":
         return <Servicios />
       default:
-        // Vista por defecto: El Panel de Control con las tarjetas de bienvenida
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-3xl font-bold text-blue-100 mb-2">¡Bienvenido a tu Panel de Control!</h2>
-              <p className="text-blue-200/80 text-lg">
-                Selecciona una opción para comenzar a gestionar tu negocio de transporte.
-              </p>
-            </div>
-            {/* Grid de opciones principales */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {menuItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="group cursor-pointer hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 bg-slate-800/60 border border-blue-700/50 backdrop-blur-sm hover:bg-slate-800/80 rounded-lg p-6"
-                  onClick={() => setCurrentPage(item.id)}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`${item.color} p-3 rounded-xl shadow-lg transition-transform group-hover:scale-110`}>
-                      <item.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl text-blue-100 font-semibold">{item.title}</h3>
-                      <p className="text-blue-200/70">{item.description}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )
+        // Vista por defecto: El Panel de Control Principal (Principal.jsx)
+        return <Principal onNavigate={(page) => setCurrentPage(page)} />
     }
   }
 
@@ -96,7 +70,7 @@ export default function Dashboard() {
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-2 rounded-xl shadow-lg">
                 <Car className="h-6 w-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-blue-100 italic tracking-wider">CONDUCASH</h1>
+              <h1 className="text-xl font-bold text-blue-100 italic tracking-wider">TransportApp</h1>
             </div>
             <button
               onClick={async () => {

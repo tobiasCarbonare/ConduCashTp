@@ -54,7 +54,7 @@ export default function LoginPage({ onLogin }) {
               <Car className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-blue-100 italic tracking-tighter uppercase">CONDUCASH</h1>
+          <h1 className="text-2xl font-bold text-blue-100 italic tracking-tighter uppercase">TransportApp</h1>
           <p className="text-blue-200/80 text-sm">Gestiona tu negocio de transporte de forma inteligente</p>
         </div>
 

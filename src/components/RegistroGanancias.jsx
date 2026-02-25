@@ -23,7 +23,7 @@ import {
  * Este módulo permite al usuario ingresar sus métricas diarias de trabajo
  * (ganancias, viajes, kms, horas y gastos) para analizar su rentabilidad.
  */
-function RegistroGanancias() {
+function RegistroGanancias({ initialView = 'form' }) {
   // Estado inicial vacío para el formulario
   const initialFormState = {
     ganancias: '',
@@ -40,7 +40,7 @@ function RegistroGanancias() {
   const [historial, setHistorial] = useState([]); // Datos traídos de Supabase
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [view, setView] = useState('form'); // Controla si se ve el formulario o el historial
+  const [view, setView] = useState(initialView); // Controla si se ve el formulario o el historial
 
   // Lógica simple para deshabilitar el botón si faltan campos obligatorios
   const isFormIncomplete = Object.values(formulario).some(value => value === "" && !['gananciasExtras'].includes(Object.keys(formulario).find(key => formulario[key] === value)));
@@ -362,7 +362,7 @@ function RegistroGanancias() {
                 {loadingHistory ? 'Cargando...' : 'Sincronizar'}
               </button>
             </div>
-            <div className="overflow-x-auto min-h-[400px]">
+            <div className="min-h-[400px]">
               {loadingHistory ? (
                 <div className="flex flex-col items-center justify-center p-20 space-y-4">
                   <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
@@ -373,55 +373,111 @@ function RegistroGanancias() {
                   <p className="text-blue-300/50 text-xl font-medium">No hay registros guardados aún.</p>
                 </div>
               ) : (
-                /* TABLA DE DATOS HISTÓRICOS */
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-900/80 text-blue-200/50 text-[10px] sm:text-xs uppercase font-black tracking-[0.2em]">
-                    <tr>
-                      <th className="px-8 py-6">Fecha</th>
-                      <th className="px-8 py-6">Bruto</th>
-                      <th className="px-8 py-6">Gastos</th>
-                      <th className="px-8 py-6 text-green-400">Neto</th>
-                      <th className="px-8 py-6 text-center">Viajes</th>
-                      <th className="px-8 py-6 text-center">KM</th>
-                      <th className="px-8 py-6 text-center hidden lg:table-cell">Horas</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-blue-100 divide-y divide-blue-900/20">
+                <>
+                  {/* VISTA MOBILE: Cards (oculto en lg) */}
+                  <div className="lg:hidden p-4 space-y-4">
                     {historial.map((reg, index) => {
-                      // Los datos se calculan dinámicamente al renderizar para evitar redundancia en BD
                       const bruto = (reg.ganancias || 0) + (reg.ganancias_extras || 0);
                       const gastos = (reg.combustible || 0) + (reg.gastos_varios || 0);
                       const neto = bruto - gastos;
                       return (
-                        <motion.tr
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
                           key={reg.id}
-                          className="hover:bg-blue-600/5 transition-all"
+                          className="bg-slate-900/60 border border-blue-900/40 rounded-2xl p-5 space-y-4"
                         >
-                          <td className="px-8 py-5 text-sm font-bold text-blue-400">
-                            {new Date(reg.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-8 py-5 font-black text-lg">
-                            ${bruto.toLocaleString()}
-                          </td>
-                          <td className="px-8 py-5 text-red-400 font-bold">
-                            -${gastos.toLocaleString()}
-                          </td>
-                          <td className="px-8 py-5">
-                            <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-1 inline-block">
+                          <div className="flex justify-between items-center border-b border-blue-900/20 pb-3">
+                            <span className="text-blue-400 font-bold text-sm">
+                              {new Date(reg.created_at).toLocaleDateString()}
+                            </span>
+                            <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-1">
                               <span className="text-green-400 font-black text-lg">${neto.toLocaleString()}</span>
                             </div>
-                          </td>
-                          <td className="px-8 py-5 text-center font-bold">{reg.viajes}</td>
-                          <td className="px-8 py-5 text-center font-bold">{reg.kms}</td>
-                          <td className="px-8 py-5 text-center hidden lg:table-cell font-bold">{reg.horas}h</td>
-                        </motion.tr>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-blue-200/40 text-[10px] uppercase font-black tracking-widest">Ingreso Bruto</p>
+                              <p className="text-white font-bold text-lg">${bruto.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-red-400/40 text-[10px] uppercase font-black tracking-widest">Gastos Totales</p>
+                              <p className="text-red-400 font-bold text-lg">-${gastos.toLocaleString()}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 bg-slate-950/40 rounded-xl p-3">
+                            <div className="text-center">
+                              <p className="text-blue-300/30 text-[8px] font-bold uppercase">Viajes</p>
+                              <p className="text-blue-100 font-bold">{reg.viajes}</p>
+                            </div>
+                            <div className="text-center border-x border-blue-900/20">
+                              <p className="text-blue-300/30 text-[8px] font-bold uppercase">KM</p>
+                              <p className="text-blue-100 font-bold">{reg.kms}</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-blue-300/30 text-[8px] font-bold uppercase">Horas</p>
+                              <p className="text-blue-100 font-bold">{reg.horas}h</p>
+                            </div>
+                          </div>
+                        </motion.div>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </div>
+
+                  {/* VISTA DESKTOP: Tabla (oculto en mobile) */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead className="bg-slate-900/80 text-blue-200/50 text-[10px] sm:text-xs uppercase font-black tracking-[0.2em]">
+                        <tr>
+                          <th className="px-8 py-6">Fecha</th>
+                          <th className="px-8 py-6">Bruto</th>
+                          <th className="px-8 py-6">Gastos</th>
+                          <th className="px-8 py-6 text-green-400">Neto</th>
+                          <th className="px-8 py-6 text-center">Viajes</th>
+                          <th className="px-8 py-6 text-center">KM</th>
+                          <th className="px-8 py-6 text-center">Horas</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-blue-100 divide-y divide-blue-900/20">
+                        {historial.map((reg, index) => {
+                          const bruto = (reg.ganancias || 0) + (reg.ganancias_extras || 0);
+                          const gastos = (reg.combustible || 0) + (reg.gastos_varios || 0);
+                          const neto = bruto - gastos;
+                          return (
+                            <motion.tr
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              key={reg.id}
+                              className="hover:bg-blue-600/5 transition-all"
+                            >
+                              <td className="px-8 py-5 text-sm font-bold text-blue-400">
+                                {new Date(reg.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-8 py-5 font-black text-lg">
+                                ${bruto.toLocaleString()}
+                              </td>
+                              <td className="px-8 py-5 text-red-400 font-bold">
+                                -${gastos.toLocaleString()}
+                              </td>
+                              <td className="px-8 py-5">
+                                <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-1 inline-block">
+                                  <span className="text-green-400 font-black text-lg">${neto.toLocaleString()}</span>
+                                </div>
+                              </td>
+                              <td className="px-8 py-5 text-center font-bold">{reg.viajes}</td>
+                              <td className="px-8 py-5 text-center font-bold">{reg.kms}</td>
+                              <td className="px-8 py-5 text-center font-bold">{reg.horas}h</td>
+                            </motion.tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           </motion.div>

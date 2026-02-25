@@ -240,7 +240,7 @@ export default function Servicios() {
                         onChange={(e) => setKmActual(e.target.value)}
                         onFocus={() => resultados.length > 0 && setResultados([])}
                         disabled={isSaving}
-                        className={`w-full p-4 pl-12 bg-slate-900/60 border border-blue-700/30 text-blue-100 placeholder:text-blue-300/20 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-300 text-lg font-bold ${isSaving ? 'opacity-50 grayscale' : ''}`}
+                        className={`w-full p-4 pl-20 bg-slate-900/60 border border-blue-700/30 text-blue-100 placeholder:text-blue-300/20 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-300 text-lg font-bold ${isSaving ? 'opacity-50 grayscale' : ''}`}
                       />
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 font-black text-xl italic opacity-40 group-focus-within:opacity-100 transition-opacity tracking-widest">
                         KM
@@ -356,7 +356,7 @@ export default function Servicios() {
                 {loadingHistory ? 'Cargando...' : 'Actualizar'}
               </button>
             </div>
-            <div className="overflow-x-auto min-h-[400px]">
+            <div className="min-h-[400px]">
               {loadingHistory ? (
                 <div className="flex flex-col items-center justify-center p-20 space-y-4">
                   <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
@@ -367,42 +367,86 @@ export default function Servicios() {
                   <p className="text-blue-300/40 text-xl font-bold italic">No hay registros previos.</p>
                 </div>
               ) : (
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-900/80 text-blue-200/50 text-[10px] sm:text-xs uppercase font-black tracking-[0.2em]">
-                    <tr>
-                      <th className="px-8 py-6">Fecha</th>
-                      <th className="px-8 py-6">Tipo de Servicio</th>
-                      <th className="px-8 py-6 text-center">Kilometraje</th>
-                      <th className="px-8 py-6">Detalles / Alertas</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-blue-100 divide-y divide-blue-900/20">
+                <>
+                  {/* VISTA MOBILE: Cards (oculto en lg) */}
+                  <div className="lg:hidden p-4 space-y-4">
                     {historial.map((serv, index) => (
-                      <motion.tr
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                         key={serv.id}
-                        className="hover:bg-blue-600/5 transition-all group"
+                        className="bg-slate-900/60 border border-blue-900/40 rounded-2xl p-5 space-y-4"
                       >
-                        <td className="px-8 py-5 text-sm font-bold text-blue-400">
-                          {new Date(serv.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-8 py-5">
-                          <span className="px-3 py-1 rounded-full bg-blue-600/10 text-blue-400 text-xs font-black border border-blue-600/20 uppercase">
+                        <div className="flex justify-between items-center border-b border-blue-900/20 pb-3">
+                          <span className="text-blue-400 font-bold text-sm">
+                            {new Date(serv.created_at).toLocaleDateString()}
+                          </span>
+                          <span className="px-3 py-1 rounded-full bg-blue-600/10 text-blue-400 text-[10px] font-black border border-blue-600/20 uppercase tracking-tighter">
                             {SERVICE_CONFIG[serv.tipo_servicio]?.label || serv.tipo_servicio}
                           </span>
-                        </td>
-                        <td className="px-8 py-5 text-center font-black">
-                          {serv.kilomentraje_en_servicio.toLocaleString()} km
-                        </td>
-                        <td className="px-8 py-5 text-xs text-blue-300/80 font-medium whitespace-pre-wrap leading-relaxed">
-                          {serv.comentarios || "-"}
-                        </td>
-                      </motion.tr>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="p-3 bg-blue-600/10 rounded-xl">
+                            <Gauge className="h-5 w-5 text-blue-400" />
+                          </div>
+                          <div>
+                            <p className="text-blue-300/30 text-[10px] font-bold uppercase tracking-widest">Kilometraje</p>
+                            <p className="text-white font-black text-lg">{serv.kilomentraje_en_servicio.toLocaleString()} km</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-950/40 rounded-xl p-4 border border-blue-900/10">
+                          <p className="text-blue-300/30 text-[10px] font-bold uppercase mb-1">Detalles / Alertas</p>
+                          <p className="text-blue-100 text-xs font-medium leading-relaxed italic whitespace-pre-wrap">
+                            {serv.comentarios || "Sin detalles adicionales"}
+                          </p>
+                        </div>
+                      </motion.div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+
+                  {/* VISTA DESKTOP: Tabla (oculto en mobile) */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead className="bg-slate-900/80 text-blue-200/50 text-[10px] sm:text-xs uppercase font-black tracking-[0.2em]">
+                        <tr>
+                          <th className="px-8 py-6">Fecha</th>
+                          <th className="px-8 py-6">Tipo de Servicio</th>
+                          <th className="px-8 py-6 text-center">Kilometraje</th>
+                          <th className="px-8 py-6">Detalles / Alertas</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-blue-100 divide-y divide-blue-900/20">
+                        {historial.map((serv, index) => (
+                          <motion.tr
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            key={serv.id}
+                            className="hover:bg-blue-600/5 transition-all group"
+                          >
+                            <td className="px-8 py-5 text-sm font-bold text-blue-400">
+                              {new Date(serv.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-8 py-5">
+                              <span className="px-3 py-1 rounded-full bg-blue-600/10 text-blue-400 text-xs font-black border border-blue-600/20 uppercase">
+                                {SERVICE_CONFIG[serv.tipo_servicio]?.label || serv.tipo_servicio}
+                              </span>
+                            </td>
+                            <td className="px-8 py-5 text-center font-black">
+                              {serv.kilomentraje_en_servicio.toLocaleString()} km
+                            </td>
+                            <td className="px-8 py-5 text-xs text-blue-300/80 font-medium whitespace-pre-wrap leading-relaxed">
+                              {serv.comentarios || "-"}
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           </motion.div>
